@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>KWBB</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .current-time {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+    }
+    
+    .direction-toggle {
+      display: flex;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    
+    .direction-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .direction-btn.active {
+      background: #4f46e5;
+      color: #fff;
+    }
+    
+    .main-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .next-bus-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+    }
+    
+    .next-bus-time {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .next-bus-countdown {
+      font-size: 18px;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 20px;
+    }
+    
+    .action-box {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .action-emoji {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .action-text {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .action-subtext {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+    }
+    
+    .later-buses {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    
+    .later-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+    }
+    
+    .later-list {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .later-item {
+      background: rgba(255,255,255,0.1);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    
+    .no-service {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .no-service-emoji {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .no-service-text {
+      font-size: 18px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .schedule-toggle {
+      background: rgba(255,255,255,0.05);
+      border: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      width: 100%;
+      text-align: center;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.2s;
+    }
+    
+    .schedule-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .schedule-panel {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+      display: none;
+    }
+    
+    .schedule-panel.open {
+      display: block;
+    }
+    
+    .schedule-section {
+      margin-bottom: 20px;
+    }
+    
+    .schedule-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .schedule-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .schedule-times {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .schedule-time {
+      background: rgba(255,255,255,0.08);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .schedule-note {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+
+  <script>
+    // 時刻表資料（從 CSV 載入）
+    let schedule = {
+      weekday: { toMRT: [], toCondo: [] },
+      weekend: { toMRT: [], toCondo: [] }
+    };
+    
+    // 載入 CSV
+    async function loadSchedule() {
+      try {
+        const response = await fetch('schedule.csv');
+        const text = await response.text();
+        const lines = text.trim().split('\n').slice(1); // 跳過 header
+        
+        lines.forEach(line => {
+          const [dayType, direction, time] = line.split(',');
+          if (schedule[dayType] && schedule[dayType][direction]) {
+            schedule[dayType][direction].push(time);
+          }
+        });
+        
+        render();
+      } catch (error) {
+        console.error('無法載入時刻表:', error);
+        // 顯示錯誤訊息
+        document.getElementById('app').innerHTML = `
+          <div class="header">
+            <h1>🚌 KWBB</h1>
+          </div>
+          <div class="main-card">
+            <div class="no-service">
+              <div class="no-service-emoji">⚠️</div>
+              <div class="no-service-text">無法載入時刻表</div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    let direction = 'toCondo';
+    let scheduleOpen = false;
+
+    function getScheduleType(date) {
+      const day = date.getDay();
+      if (day === 0 || day === 6) return 'weekend'; // 週六日
+      return 'weekday';
+    }
+
+    function timeToMinutes(timeStr) {
+      const hours = parseInt(timeStr.substring(0, 2));
+      const mins = parseInt(timeStr.substring(2, 4));
+      return hours * 60 + mins;
+    }
+
+    function formatTime(timeStr) {
+      return timeStr.substring(0, 2) + ':' + timeStr.substring(2, 4);
+    }
+
+    function getCurrentMinutes(date) {
+      return date.getHours() * 60 + date.getMinutes();
+    }
+
+    function getDayName(date) {
+      const days = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+      return days[date.getDay()];
+    }
+
+    function getNextBuses(date, dir) {
+      const scheduleType = getScheduleType(date);
+      const times = schedule[scheduleType][dir];
+      const currentMins = getCurrentMinutes(date);
+      
+      const upcoming = times.filter(t => timeToMinutes(t) > currentMins);
+      return upcoming;
+    }
+
+    function getAction(minutesUntil, dir) {
+      // 往 MRT：從 Condo 發車，準時不等人，走路 5 分鐘
+      // 往 Condo：從 MRT 搭，車可能遲到 0-3 分鐘，可以賭
+      
+      if (dir === 'toMRT') {
+        // 往 MRT - 準時發車，不能賭
+        if (minutesUntil > 15) {
+          const canSit = minutesUntil - 15;
+          return {
+            emoji: '☕',
+            text: `還可以坐 ${canSit} 分鐘`,
+            subtext: '時間到了再去搭車'
+          };
+        } else if (minutesUntil >= 5) {
+          return {
+            emoji: '🚶',
+            text: '可以出門了',
+            subtext: '走過去剛好上車'
+          };
+        } else {
+          return {
+            emoji: '⏭',
+            text: '這班來不及了',
+            subtext: '等下一班吧'
+          };
+        }
+      } else {
+        // 往 Condo - 車可能遲到，可以賭
+        if (minutesUntil > 15) {
+          const canSit = minutesUntil - 15;
+          return {
+            emoji: '☕',
+            text: `還可以坐 ${canSit} 分鐘`,
+            subtext: '時間到了再走去排隊'
+          };
+        } else if (minutesUntil >= 5) {
+          return {
+            emoji: '🚶',
+            text: '直接去排隊',
+            subtext: '現在出發剛好'
+          };
+        } else if (minutesUntil >= 1) {
+          return {
+            emoji: '🏃',
+            text: '跑一下可能趕上！',
+            subtext: '車可能會遲到 1-2 分鐘'
+          };
+        } else {
+          return {
+            emoji: '⏭',
+            text: '這班來不及了',
+            subtext: '看下一班吧'
+          };
+        }
+      }
+    }
+
+    function render() {
+      const now = new Date();
+      const app = document.getElementById('app');
+      
+      // 還沒載入完成
+      if (schedule.weekday.toMRT.length === 0) return;
+      
+      const nextBuses = getNextBuses(now, direction);
+      
+      const currentTimeStr = 
+        now.getHours().toString().padStart(2, '0') + ':' + 
+        now.getMinutes().toString().padStart(2, '0');
+      
+      let content = `
+        <div class="header">
+          <h1>🚌 KWBB</h1>
+          <div class="current-time">現在 ${currentTimeStr}（${getDayName(now)}）</div>
+        </div>
+        
+        <div class="direction-toggle">
+          <button class="direction-btn ${direction === 'toCondo' ? 'active' : ''}" onclick="setDirection('toCondo')">
+            往 Condo
+          </button>
+          <button class="direction-btn ${direction === 'toMRT' ? 'active' : ''}" onclick="setDirection('toMRT')">
+            往 MRT
+          </button>
+        </div>
+      `;
+      
+      if (nextBuses.length === 0) {
+        content += `
+          <div class="main-card">
+            <div class="no-service">
+              <div class="no-service-emoji">😴</div>
+              <div class="no-service-text">今天沒有更多班次了</div>
+            </div>
+          </div>
+        `;
+      } else {
+        const nextBus = nextBuses[0];
+        const nextBusMins = timeToMinutes(nextBus);
+        const currentMins = getCurrentMinutes(now);
+        const minutesUntil = nextBusMins - currentMins;
+        const action = getAction(minutesUntil, direction);
+        
+        content += `
+          <div class="main-card">
+            <div class="next-bus-label">下一班</div>
+            <div class="next-bus-time">${formatTime(nextBus)}</div>
+            <div class="next-bus-countdown">${minutesUntil} 分鐘後</div>
+            
+            <div class="action-box">
+              <div class="action-emoji">${action.emoji}</div>
+              <div class="action-text">${action.text}</div>
+              <div class="action-subtext">${action.subtext}</div>
+            </div>
+          </div>
+        `;
+        
+        if (nextBuses.length > 1) {
+          const laterBuses = nextBuses.slice(1, 5);
+          content += `
+            <div class="later-buses">
+              <div class="later-label">之後的班次</div>
+              <div class="later-list">
+                ${laterBuses.map(t => `<div class="later-item">${formatTime(t)}</div>`).join('')}
+              </div>
+            </div>
+          `;
+        }
+      }
+      
+      // 加入時刻表面板
+      content += renderSchedulePanel(direction);
+      
+      app.innerHTML = content;
+    }
+
+    function setDirection(dir) {
+      direction = dir;
+      render();
+    }
+    
+    function toggleSchedule() {
+      scheduleOpen = !scheduleOpen;
+      render();
+    }
+    
+    function renderSchedulePanel(dir) {
+      const weekdayTimes = schedule.weekday[dir].map(t => formatTime(t));
+      const weekendTimes = schedule.weekend[dir].map(t => formatTime(t));
+      
+      return `
+        <button class="schedule-toggle" onclick="toggleSchedule()">
+          ${scheduleOpen ? '▲ 收起時刻表' : '▼ 查看完整時刻表'}
+        </button>
+        
+        <div class="schedule-panel ${scheduleOpen ? 'open' : ''}">
+          <div class="schedule-section">
+            <div class="schedule-section-title">📅 平日（週一至週五）</div>
+            <div class="schedule-times">
+              ${weekdayTimes.map(t => `<span class="schedule-time">${t}</span>`).join('')}
+            </div>
+          </div>
+          
+          <div class="schedule-section">
+            <div class="schedule-section-title">📅 週末及假日</div>
+            <div class="schedule-times">
+              ${weekendTimes.map(t => `<span class="schedule-time">${t}</span>`).join('')}
+            </div>
+          </div>
+          
+          <div class="schedule-note">
+            ⚠️ 每日 15:05 - 15:59 無班次
+          </div>
+        </div>
+      `;
+    }
+
+    // 載入時刻表後開始
+    loadSchedule();
+    
+    // 每秒更新
+    setInterval(render, 1000);
+    
+    // 切回 tab 時立刻更新
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        render();
+      }
+    });
+  </script>
+</body>
+</html>
