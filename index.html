@@ -316,14 +316,17 @@
       return upcoming;
     }
 
-    function getAction(minutesUntil, dir) {
+    function getAction(minutesUntil, dir, date) {
       // 往 MRT：從 Condo 發車，準時不等人，走路 5 分鐘
       // 往 Condo：從 MRT 搭，車可能遲到 0-3 分鐘，可以賭
-      
+
       if (dir === 'toMRT') {
         // 往 MRT - 準時發車，不能賭
-        if (minutesUntil > 15) {
-          const canSit = minutesUntil - 15;
+        const day = date.getDay();
+        const isWeekend = day === 0 || day === 6;
+        const minus_minutes = isWeekend ? 10 : 15;
+        if (minutesUntil > minus_minutes) {
+          const canSit = minutesUntil - minus_minutes;
           return {
             emoji: '☕',
             text: `還可以坐 ${canSit} 分鐘`,
@@ -416,7 +419,7 @@
         const nextBusMins = timeToMinutes(nextBus);
         const currentMins = getCurrentMinutes(now);
         const minutesUntil = nextBusMins - currentMins;
-        const action = getAction(minutesUntil, direction);
+        const action = getAction(minutesUntil, direction, now);
         
         content += `
           <div class="main-card">
