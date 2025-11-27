@@ -344,8 +344,8 @@
         }
       } else {
         // 往 Condo - 車可能遲到，可以賭
-        if (minutesUntil > 15) {
-          const canSit = minutesUntil - 15;
+        if (minutesUntil > 10) {
+          const canSit = minutesUntil - 10;
           return {
             emoji: '☕',
             text: `還可以坐 ${canSit} 分鐘`,
